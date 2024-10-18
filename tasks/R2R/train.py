@@ -27,6 +27,8 @@ PLOT_DIR = 'tasks/R2R/plots/'
 IMAGENET_FEATURES = 'img_features/ResNet-152-imagenet.tsv'
 MAX_INPUT_LENGTH = 80
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 features = IMAGENET_FEATURES
 batch_size = 100
 max_episode_len = 20
@@ -124,9 +126,9 @@ def test_submission():
     # Build models and train
     enc_hidden_size = hidden_size//2 if bidirectional else hidden_size
     encoder = EncoderLSTM(len(vocab), word_embedding_size, enc_hidden_size, padding_idx,
-                  dropout_ratio, bidirectional=bidirectional).cuda()
+                  dropout_ratio, bidirectional=bidirectional).to(device)
     decoder = AttnDecoderLSTM(Seq2SeqAgent.n_inputs(), Seq2SeqAgent.n_outputs(),
-                  action_embedding_size, hidden_size, dropout_ratio).cuda()
+                  action_embedding_size, hidden_size, dropout_ratio).to(device)
     train(train_env, encoder, decoder, n_iters)
 
     # Generate test submission
@@ -153,9 +155,9 @@ def train_val():
     # Build models and train
     enc_hidden_size = hidden_size//2 if bidirectional else hidden_size
     encoder = EncoderLSTM(len(vocab), word_embedding_size, enc_hidden_size, padding_idx,
-                  dropout_ratio, bidirectional=bidirectional).cuda()
+                  dropout_ratio, bidirectional=bidirectional).to(device)
     decoder = AttnDecoderLSTM(Seq2SeqAgent.n_inputs(), Seq2SeqAgent.n_outputs(),
-                  action_embedding_size, hidden_size, dropout_ratio).cuda()
+                  action_embedding_size, hidden_size, dropout_ratio).to(device)
     train(train_env, encoder, decoder, n_iters, val_envs=val_envs)
 
 

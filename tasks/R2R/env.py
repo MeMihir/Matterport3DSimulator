@@ -77,7 +77,7 @@ class EnvBatch():
             ix.append(int(i))
             heading.append(float(h))
             elevation.append(float(e))
-        self.sim.makeAction(ix, heading, elevation)
+        self.sim.makeAction([ix], [heading], [elevation])
 
     def makeSimpleActions(self, simple_indices):
         ''' Take an action using a simple interface: 0-forward, 1-turn left, 2-turn right, 3-look up, 4-look down.

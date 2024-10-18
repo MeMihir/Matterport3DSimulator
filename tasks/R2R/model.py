@@ -25,6 +25,7 @@ class EncoderLSTM(nn.Module):
         self.encoder2decoder = nn.Linear(hidden_size * self.num_directions,
             hidden_size * self.num_directions
         )
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def init_state(self, inputs):
         ''' Initialize to zero cell states and hidden states.'''
@@ -39,7 +40,7 @@ class EncoderLSTM(nn.Module):
             batch_size,
             self.hidden_size
         ), requires_grad=False)
-        return h0.cuda(), c0.cuda()
+        return h0.to(self.device), c0.to(self.device)
 
     def forward(self, inputs, lengths):
         ''' Expects input vocab indices as (batch, seq_len). Also requires a 

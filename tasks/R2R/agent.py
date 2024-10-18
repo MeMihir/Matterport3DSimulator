@@ -149,6 +149,7 @@ class Seq2SeqAgent(BaseAgent):
         self.episode_len = episode_len
         self.losses = []
         self.criterion = nn.CrossEntropyLoss(ignore_index = self.model_actions.index('<ignore>'))
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     @staticmethod
     def n_inputs():
@@ -174,8 +175,8 @@ class Seq2SeqAgent(BaseAgent):
         sorted_tensor = seq_tensor[perm_idx]
         mask = (sorted_tensor == padding_idx)[:,:seq_lengths[0]]
 
-        return Variable(sorted_tensor, requires_grad=False).long().cuda(), \
-               mask.byte().cuda(), \
+        return Variable(sorted_tensor, requires_grad=False).long().to(self.device), \
+               mask.byte().to(self.device), \
                list(seq_lengths), list(perm_idx)
 
     def _feature_variable(self, obs):
@@ -184,7 +185,7 @@ class Seq2SeqAgent(BaseAgent):
         features = np.empty((len(obs),feature_size), dtype=np.float32)
         for i,ob in enumerate(obs):
             features[i,:] = ob['feature']
-        return Variable(torch.from_numpy(features), requires_grad=False).cuda()
+        return Variable(torch.from_numpy(features), requires_grad=False).to(self.device)
 
     def _teacher_action(self, obs, ended):
         ''' Extract teacher actions into variable. '''
@@ -206,7 +207,7 @@ class Seq2SeqAgent(BaseAgent):
                 a[i] = self.model_actions.index('<ignore>')
             else:
                 a[i] = self.model_actions.index('<end>')
-        return Variable(a, requires_grad=False).cuda()
+        return Variable(a, requires_grad=False).to(self.device)
 
     def rollout(self):
         obs = np.array(self.env.reset())
@@ -227,7 +228,7 @@ class Seq2SeqAgent(BaseAgent):
 
         # Initial action
         a_t = Variable(torch.ones(batch_size).long() * self.model_actions.index('<start>'),
-                    requires_grad=False).cuda()
+                    requires_grad=False).to(self.device)
         ended = np.array([False] * batch_size) # Indices match permuation of the model, not env
 
         # Do a sequence rollout and calculate the loss
